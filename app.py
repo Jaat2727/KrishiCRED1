@@ -4,199 +4,171 @@ import random
 import time
 import plotly.graph_objects as go
 from streamlit_option_menu import option_menu
+from databricks.sdk import WorkspaceClient
 
 # ==========================================
-# 1. PAGE CONFIGURATION & ENTERPRISE CSS
+# 1. INITIALIZATION & CLIENT
 # ==========================================
 st.set_page_config(page_title="Krishi-Credit AI", page_icon="🏦", layout="wide")
 
+# Initialize Workspace Client (Automatically uses Databricks App Auth)
+w = WorkspaceClient()
+
+# ==========================================
+# 2. PROFESSIONAL STYLING (DARK MODE SAFE)
+# ==========================================
 st.markdown("""
     <style>
-    /* Hide Streamlit elements */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Sleek Metric Cards with Hover Effect */
+    .main { background-color: #0f172a; }
     div[data-testid="metric-container"] {
         background-color: #1e293b;
         border: 1px solid #334155;
-        padding: 15px;
-        border-radius: 10px;
-        color: white;
-        transition: transform 0.2s ease-in-out;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-    div[data-testid="metric-container"]:hover {
-        transform: translateY(-5px);
-        border-color: #3b82f6;
-    }
-    
-    /* Custom Headers */
-    .gradient-text {
-        background: -webkit-linear-gradient(45deg, #10b981, #3b82f6);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-size: 2.5rem;
-        font-weight: 800;
-        margin-bottom: 0px;
-    }
-    
-    /* GenAI Terminal Box */
-    .ai-terminal {
-        background-color: #0f172a;
-        border-left: 4px solid #8b5cf6;
         padding: 20px;
-        border-radius: 8px;
-        font-family: 'Courier New', Courier, monospace;
-        color: #e2e8f0;
+        border-radius: 12px;
+    }
+    .stTabs [data-baseweb="tab-list"] { gap: 24px; }
+    .stTabs [data-baseweb="tab"] {
+        height: 50px;
+        white-space: pre-wrap;
+        font-weight: 600;
     }
     </style>
 """, unsafe_allow_html=True)
 
 # ==========================================
-# 2. BACKEND INTEGRATION PIPELINES (MOCKS)
+# 3. BACKEND INTEGRATION FUNCTIONS
 # ==========================================
+
 def fetch_ml_score(user_id: str):
-    time.sleep(1.2) # Network latency simulation
-    seed = sum(ord(c) for c in user_id)
-    random.seed(seed)
-    
-    score = random.randint(500, 850)
-    features = {
-        "telecom_streak": random.randint(12, 48), # out of 48 months
-        "fastag_activity": random.randint(10, 50), # out of 50 pings
-        "pm_kisan": random.randint(60, 100), # % confidence
-        "upi_ratio": random.randint(10, 80), # % usage
-        "crop_insurance": random.randint(50, 100) # % coverage history
-    }
-    return score, features
+    """
+    Switch to Real Integration tomorrow by providing the Endpoint Name.
+    """
+    try:
+        # --- REAL CODE (Uncomment tomorrow) ---
+        # response = w.serving_endpoints.query(
+        #     name="YOUR_MODEL_ENDPOINT_NAME",
+        #     dataframe_records=[{"aadhaar_id": user_id}]
+        # )
+        # score = response.predictions[0]
+        
+        # --- MOCK CODE (For Tonight) ---
+        time.sleep(1.5)
+        seed = sum(ord(c) for c in user_id)
+        random.seed(seed)
+        score = random.randint(550, 850)
+        
+        features = {
+            "telecom": random.randint(12, 48),
+            "fastag": random.randint(5, 40),
+            "pm_kisan": "Verified",
+            "upi": f"{random.randint(10, 70)}%"
+        }
+        return score, features
+    except Exception as e:
+        st.error(f"Backend Connection Failed: {e}")
+        return 0, {}
 
-def get_genai_advisory(score):
-    time.sleep(1.5)
-    if score >= 650:
-        return f"✅ **APPROVED:** Model confidence high. Applicant demonstrates strong digital footprint resilience despite low formal banking liquidity. Alternative proxies (Telecom/FASTag) align with RBI Master Direction for Microfinance."
-    return f"⚠️ **MANUAL REVIEW:** Alternative footprint insufficient for automated clearing. Trigger physical field verification per risk matrix."
+def get_genai_advisory(score, user_id):
+    """
+    Switch to Real Llama-3/RAG tomorrow.
+    """
+    # --- MOCK CODE ---
+    time.sleep(1)
+    if score > 650:
+        return f"✅ **Approved:** Applicant {user_id} shows high resilience in alternative footprint (Telecom/FASTag). Eligible for KCC Microfinance under RBI 2022 norms."
+    return f"⚠️ **Review:** Insufficient digital footprint. Recommend manual field visit for income assessment."
 
 # ==========================================
-# 3. SIDEBAR NAVIGATION (APP STYLE)
+# 4. SIDEBAR NAVIGATION
 # ==========================================
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/3061/3061341.png", width=60)
+    st.image("https://cdn-icons-png.flaticon.com/512/3061/3061341.png", width=70)
+    st.title("Sovereign Engine")
     
-    # Sleek navigation menu
-    selected_tab = option_menu(
-        menu_title="Main Menu",
-        options=["Underwriting Engine", "Medallion Lineage", "API Docs"],
-        icons=["shield-check", "database", "code-slash"],
-        menu_icon="cast",
+    selected = option_menu(
+        menu_title=None,
+        options=["Underwriter", "Data Lineage", "Settings"],
+        icons=["cpu", "diagram-3", "gear"],
         default_index=0,
-        styles={
-            "container": {"padding": "0!important", "background-color": "transparent"},
-            "nav-link-selected": {"background-color": "#3b82f6"},
-        }
+        styles={"nav-link-selected": {"background-color": "#3b82f6"}}
     )
     
     st.divider()
-    st.subheader("Manager Portal")
-    farmer_id = st.text_input("Applicant ID (Aadhaar/Phone)", "ADHR-9982")
-    run_engine = st.button("🚀 Execute AI Pipeline", use_container_width=True, type="primary")
+    applicant_id = st.text_input("Aadhaar Number", value="ADHR-4452-9901")
+    is_clicked = st.button("🚀 Run Underwriting", use_container_width=True, type="primary")
 
 # ==========================================
-# 4. MAIN DASHBOARD: UNDERWRITING ENGINE
+# 5. MAIN DASHBOARD CONTENT
 # ==========================================
-if selected_tab == "Underwriting Engine":
-    st.markdown('<p class="gradient-text">Krishi-Credit Sovereign AI</p>', unsafe_allow_html=True)
-    st.caption("Databricks MLflow & Foundation Model Inference Dashboard")
-    st.divider()
-
-    if run_engine:
-        with st.spinner("Connecting to Databricks Unity Catalog..."):
-            score, features = fetch_ml_score(farmer_id)
-            advisory = get_genai_advisory(score)
-            
-        risk_color = "green" if score >= 650 else "red"
-        tier = "Prime" if score >= 700 else "Near-Prime" if score >= 600 else "Sub-Prime"
-
-        # --- ROW 1: METRICS ---
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("Trust Score", f"{score}/900", delta=f"Tier: {tier}", delta_color="normal" if score>600 else "inverse")
-        c2.metric("Telecom Resilience", f"{features['telecom_streak']} mo", delta="High Confidence")
-        c3.metric("Mandi Transport (FASTag)", f"{features['fastag_activity']} pings", delta="Verified")
-        c4.metric("Est. Pre-Approval", f"₹{score * 150}", delta="Based on RBI limits")
-
-        st.write("") # Spacer
-
-        # --- ROW 2: CHARTS & AI ADVISORY ---
-        col_chart, col_ai = st.columns([1.2, 1])
+if selected == "Underwriter":
+    st.header("🌾 Krishi-Credit: Alternative Scoring")
+    
+    if is_clicked:
+        score, features = fetch_ml_score(applicant_id)
         
-        with col_chart:
-            st.subheader("🕸️ Alternative Data Footprint")
-            st.caption("Applicant vs. Prime Farmer Benchmark")
+        # --- TOP ROW: GAUGE & METRICS ---
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            fig = go.Figure(go.Indicator(
+                mode = "gauge+number",
+                value = score,
+                title = {'text': "Credit Trust Score"},
+                gauge = {
+                    'axis': {'range': [300, 900]},
+                    'bar': {'color': "#3b82f6"},
+                    'steps': [
+                        {'range': [300, 600], 'color': "#fee2e2"},
+                        {'range': [600, 750], 'color': "#fef3c7"},
+                        {'range': [750, 900], 'color': "#d1fae5"}]
+                }
+            ))
+            fig.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20), paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
+            st.plotly_chart(fig, use_container_width=True)
             
-            # THE RADAR CHART (Judges love this)
-            categories = ['Telecom History', 'FASTag/Logistics', 'PM-Kisan Gov', 'UPI Density', 'Crop Insurance']
+        with col2:
+            st.write("### Data Proxies (Non-UPI)")
+            m1, m2 = st.columns(2)
+            m1.metric("Telecom Streak", f"{features['telecom']} Months", "Stable")
+            m2.metric("Mandi Visits", f"{features['fastag']} Pings", "High Activity")
             
-            fig = go.Figure()
-            # Applicant Profile
-            fig.add_trace(go.Scatterpolar(
-                r=[features['telecom_streak']*2, features['fastag_activity']*2, features['pm_kisan'], features['upi_ratio'], features['crop_insurance']],
+            m3, m4 = st.columns(2)
+            m3.metric("PM-Kisan", features['pm_kisan'], "Gov Link")
+            m4.metric("Cash Density", features['upi'], "Informal")
+
+        st.divider()
+
+        # --- BOTTOM ROW: TABS ---
+        t1, t2 = st.tabs(["🤖 AI Rationale", "🕸️ Explainable AI"])
+        
+        with t1:
+            st.subheader("GenAI Underwriting Advisory")
+            advisory = get_genai_advisory(score, applicant_id)
+            st.info(advisory)
+            st.caption("Generated via Databricks Foundation Model API (Llama-3-70B)")
+            
+        with t2:
+            # Radar chart for "Winning" visualization
+            categories = ['Telecom','FASTag','PM-Kisan','Insurance','Harvest']
+            fig_radar = go.Figure()
+            fig_radar.add_trace(go.Scatterpolar(
+                r=[features['telecom']*2, features['fastag']*2, 90, 70, 80],
                 theta=categories,
                 fill='toself',
-                name='Applicant Profiling',
+                name='Applicant',
                 line_color='#3b82f6'
             ))
-            # Prime Benchmark
-            fig.add_trace(go.Scatterpolar(
-                r=[80, 70, 90, 60, 85],
-                theta=categories,
-                fill='toself',
-                name='Prime Benchmark',
-                line_color='#10b981'
-            ))
-            fig.update_layout(
-                polar=dict(radialaxis=dict(visible=True, range=[0, 100])),
-                showlegend=True,
-                height=350,
-                margin=dict(t=20, b=20, l=20, r=20),
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-
-        with col_ai:
-            st.subheader("🤖 GenAI Rationale")
-            st.caption("Powered by Databricks AI Gateway (Llama-3)")
-            
-            # Terminal-style output box
-            st.markdown(f'<div class="ai-terminal">{advisory}</div>', unsafe_allow_html=True)
-            
-            st.write("")
-            with st.expander("View FAISS Vector References"):
-                st.write("📄 `rbi_microfinance_master_direction_2022.pdf` (Page 14)")
-                st.write("📄 `nabard_agri_loan_framework.pdf` (Page 3)")
+            fig_radar.update_layout(polar=dict(radialaxis=dict(visible=True, range=[0, 100])), showlegend=False, height=350, paper_bgcolor="rgba(0,0,0,0)", font={'color': "white"})
+            st.plotly_chart(fig_radar, use_container_width=True)
 
     else:
-        st.info("👈 Enter an Applicant ID and execute the pipeline to view the Sovereign Credit Report.")
+        st.info("Input Aadhaar and click Execute to analyze the farmer's alternative digital footprint.")
 
-# ==========================================
-# 5. OTHER TABS (For Hackathon Flexing)
-# ==========================================
-elif selected_tab == "Medallion Lineage":
-    st.title("🗄️ Databricks Architecture")
-    st.image("https://docs.databricks.com/en/_images/medallion-architecture.png", caption="Our Unity Catalog Data Flow")
+elif selected == "Data Lineage":
+    st.subheader("Databricks Medallion Architecture")
     st.markdown("""
-    * **Bronze:** Raw JSON streams from Telecom providers and FASTag APIs.
-    * **Silver:** Delta Live Tables (DLT) performing Aadhaar-hashing and deduping.
-    * **Gold:** Feature Store tables driving the MLflow underwriting model.
+    - **Bronze:** Raw API payloads from Telecom/Logistics providers.
+    - **Silver:** Cleaned and Aadhaar-hashed features in Delta Lake.
+    - **Gold:** Training-ready features for MLflow Underwriting Model.
     """)
-
-elif selected_tab == "API Docs":
-    st.title("🔌 Integration Endpoints")
-    st.code("""
-    POST /api/v1/predict_trust_score
-    {
-        "applicant_id": "ADHR-9982",
-        "consent_token": "bearer_abc123"
-    }
-    """, language="json")
+    st.image("https://www.databricks.com/wp-content/uploads/2022/03/medallion-architecture-1.png")
