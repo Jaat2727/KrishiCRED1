@@ -67,6 +67,10 @@ def fetch_ml_score(user_id: str) -> tuple[int, dict]:
     score = random.randint(300, 900)
     
     # Generate mock features (Alternative Data)
+    # Generate mock features (Alternative Data)
     features = {
         "Telecom Streak": f"{random.randint(6, 36)} months active",
-        "FASTag Activity": "High (Mandi Route
+        "FASTag Activity": "High (Mandi Route)",
+        "PM-Kisan Status": "Verified",
+        "Crop Insurance": "Active (PMFBY)"
+    }
