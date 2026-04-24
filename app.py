@@ -26,7 +26,7 @@ st.markdown("""
     .main-header { font-size: 2.5rem; font-weight: 700; color: #10b981; margin-bottom: 0rem; }
     .sub-header { font-size: 1.2rem; color: #9ca3af; margin-bottom: 2rem; }
     </style>
-    """, unsafe_allow_name_with_html=True)
+    """, unsafe_allow_html=True)
 
 # --- 3. SIDEBAR: DATA INPUT (THE SOVEREIGN PROXIES) ---
 with st.sidebar:
@@ -49,8 +49,8 @@ with st.sidebar:
     analyze_btn = st.button("Generate Underwriting Report", type="primary", use_container_width=True)
 
 # --- 4. MAIN DASHBOARD ---
-st.markdown('<p class="main-header">🛡️ Krishi-Credit AI Engine</p>', unsafe_allow_name_with_html=True)
-st.markdown('<p class="sub-header">Financial Inclusion for Bharat\'s Informal Economy | Powered by Databricks</p>', unsafe_allow_name_with_html=True)
+st.markdown('<p class="main-header">🛡️ Krishi-Credit AI Engine</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Financial Inclusion for Bharat\'s Informal Economy | Powered by Databricks</p>', unsafe_allow_html=True)
 
 if analyze_btn:
     # --- MOCK ML ENGINE (Replace with real Databricks AutoML later) ---
