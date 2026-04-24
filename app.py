@@ -1,4 +1,5 @@
 import streamlit as st
 
-st.title("Databricks is working!")
-st.write("If you can see this, the port and YAML are correct.")
+st.title("🚀 Krishi-Credit is LIVE!")
+st.write("If you see this, your Databricks App is working perfectly.")
+st.balloons()
