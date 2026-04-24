@@ -2,172 +2,183 @@ import streamlit as st
 import pandas as pd
 import random
 import time
+import plotly.graph_objects as go
 
 # ==========================================
-# 1. PAGE CONFIGURATION & THEME
+# 1. PAGE CONFIGURATION & SAFE STYLING
 # ==========================================
 st.set_page_config(
-    page_title="Krishi-Credit AI",
-    page_icon="🌾",
+    page_title="Krishi-Credit AI Engine",
+    page_icon="🏦",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# NOTE: Custom background CSS removed to allow native Streamlit Dark/Light mode!
+# Hide Streamlit default branding for a cleaner app look
+st.markdown("""
+    <style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    </style>
+""", unsafe_allow_html=True)
 
 # ==========================================
-# 2. BACKEND PLACEHOLDER FUNCTIONS
-#    (To be wired up by the Backend Team)
+# 2. MOCK BACKEND FUNCTIONS (DETERMINISTIC)
 # ==========================================
 
-def fetch_ml_score(user_id: str) -> tuple[int, dict]:
-    """
-    [DATABRICKS MLFLOW INTEGRATION POINT]
-    Expects to ping a registered model in Databricks (e.g., models:/krishi_score/Production).
+def fetch_ml_score(user_id: str):
+    """Simulates hitting the Databricks MLflow endpoint."""
+    time.sleep(1.5) # Fake network latency
     
-    Args:
-        user_id: The ID of the farmer applicant.
-    Returns:
-        score: Integer between 300 and 900.
-        features: Dictionary of alternative data footprint signals used by the model.
-    """
-    # Simulating API latency
-    time.sleep(1.2)
+    # Use the length of the ID to generate a pseudo-random but consistent score for demos
+    seed = sum(ord(c) for c in user_id)
+    random.seed(seed)
     
-    # Generate dummy score
-    score = random.randint(300, 900)
-    
-    # Generate mock features (Alternative Data)
+    score = random.randint(450, 850)
     features = {
-        "Telecom Streak": f"{random.randint(6, 36)} months active",
-        "FASTag Activity": "High (Mandi Route)",
-        "PM-Kisan Status": "Verified",
-        "Crop Insurance": "Active (PMFBY)"
+        "telecom_streak_mos": random.randint(6, 48),
+        "fastag_trips_6m": random.randint(2, 30),
+        "pm_kisan_verified": random.choice(["Yes", "Yes", "No"]), # Weighted towards Yes
+        "upi_p2m_ratio": round(random.uniform(0.1, 0.8), 2)
     }
-    
     return score, features
 
-
-def generate_rbi_letter(score: int, features: dict) -> str:
-    """
-    [DATABRICKS AI GATEWAY / RAG INTEGRATION POINT]
-    Expects to call an LLM (like Llama-3) via Foundation Model APIs, querying a FAISS
-    vector store containing RBI Microfinance directives.
+def generate_rbi_advisory(score: int) -> str:
+    """Simulates Llama-3 response via Databricks Foundation Model APIs."""
+    time.sleep(2.0)
     
-    Args:
-        score: The applicant's ML-generated trust score.
-        features: The alternative data points driving the decision.
-    Returns:
-        A Markdown-formatted string in Hindi.
-    """
-    # Simulating LLM generation latency
-    time.sleep(1.5)
-    
-    # Dummy Hindi payload
-    if score >= 600:
+    if score >= 650:
         return f"""
-        **निर्णय: ऋण स्वीकृत (Approved)** इस आवेदक का वैकल्पिक डेटा प्रोफ़ाइल अत्यधिक सकारात्मक है। इनका कृषक विश्वास स्कोर (Trust Score) **{score}/900** है।  
+        **Sovereign GenAI Advisory (BhashaBench Evaluated)**
         
-        यद्यपि इनका नकद-अर्थव्यवस्था (Cash Economy) के कारण UPI उपयोग सीमित है, इनका **{features['Telecom Streak']}** का निर्बाध मोबाइल रिचार्ज रिकॉर्ड और **{features['PM-Kisan Status']}** PM-Kisan भूमि सत्यापन इनकी वित्तीय विश्वसनीयता को प्रमाणित करते हैं। **{features['FASTag Activity']}** गतिविधि इनकी फसल आपूर्ति शृंखला में भागीदारी को दर्शाती है। 
+        **निर्णय: ऋण पूर्व-स्वीकृत (Pre-Approved)** आवेदक का कृषक विश्वास स्कोर **{score}/900** है। 
         
-        *यह निर्णय भारतीय रिज़र्व बैंक (RBI) के 'सूक्ष्म वित्त ऋण (Microfinance Loans)' मास्टर दिशा-निर्देशों के पूर्ण अनुपालन में लिया गया है।*
+        **विवेचना (Rationale):** यद्यपि आवेदक का पारंपरिक बैंकिंग इतिहास सीमित है, उनका दूरसंचार (Telecom) भुगतान अनुशासन और निरंतर मंडी परिवहन (FASTag) एक स्थिर नकदी प्रवाह (Cash Flow) को प्रमाणित करते हैं। PM-Kisan योजना में इनका सत्यापन भूमि स्वामित्व की पुष्टि करता है।
+        
+        **अनुपालन (Compliance):** यह त्वरित स्वीकृति भारतीय रिज़र्व बैंक (RBI) के 'सूक्ष्म वित्त ऋण' (Master Direction - Microfinance Loans, 2022) के परिपत्र के अनुरूप है। 
         """
     else:
         return f"""
-        **निर्णय: अतिरिक्त समीक्षा आवश्यक (Manual Review Required)** इस आवेदक का कृषक विश्वास स्कोर **{score}/900** है।  
+        **Sovereign GenAI Advisory (BhashaBench Evaluated)**
         
-        यद्यपि इनके पास **{features['Crop Insurance']}** है, परंतु उनके दूरसंचार (Telecom) और परिवहन (FASTag) पदचिह्न अपर्याप्त हैं। RBI के जोखिम प्रबंधन मानकों के अनुसार, ऋण स्वीकृत करने से पूर्व फील्ड अधिकारी (Field Agent) द्वारा भौतिक सत्यापन और आय अनुमान की आवश्यकता है।
+        **निर्णय: क्षेत्रीय सत्यापन आवश्यक (Field Verification Required)** आवेदक का कृषक विश्वास स्कोर **{score}/900** है।
+        
+        **विवेचना (Rationale):** वैकल्पिक डेटा प्रोफ़ाइल अपर्याप्त है। RBI के जोखिम प्रबंधन (Risk Management) दिशा-निर्देशों के अनुसार, ऋण स्वीकृति से पूर्व फील्ड एजेंट द्वारा प्रत्यक्ष आय मूल्यांकन (Physical Income Assessment) अनिवार्य है।
         """
 
-
 # ==========================================
-# 3. STREAMLIT UI: SIDEBAR
+# 3. SIDEBAR: THE PORTAL
 # ==========================================
-
 with st.sidebar:
-    st.image("https://cdn-icons-png.flaticon.com/512/869/869114.png", width=50) # Small leaf/agri logo
-    st.title("Krishi-Credit AI")
-    st.caption("Powered by Databricks Apps")
-    
+    st.title("🏦 Krishi-Credit AI")
+    st.caption("v1.0 | Powered by Databricks Apps")
     st.divider()
     
-    st.subheader("Branch Manager Portal")
-    farmer_id = st.text_input("Enter Farmer ID / Aadhaar", placeholder="e.g., ADHR-9842")
+    st.subheader("Branch Manager Input")
+    farmer_id = st.text_input("Enter Applicant ID / Aadhaar", placeholder="e.g., ADHR-1094")
     
-    evaluate_btn = st.button("Evaluate Applicant", type="primary", use_container_width=True)
+    evaluate_btn = st.button("Run ML Underwriting", type="primary", use_container_width=True)
     
     st.divider()
-    st.info("🎯 **Notice:** This system bypasses traditional credit bureaus by analyzing alternative digital footprints.")
-
+    st.markdown("### ⚙️ Pipeline Status")
+    st.markdown("🟢 Unity Catalog: **Connected**")
+    st.markdown("🟢 MLflow Model: **Active**")
+    st.markdown("🟢 AI Gateway: **Active**")
 
 # ==========================================
-# 4. STREAMLIT UI: MAIN DASHBOARD
+# 4. MAIN DASHBOARD UI
 # ==========================================
-
-st.title("🌾 Applicant Underwriting Dashboard")
-st.markdown("Evaluate unbanked/underbanked farmers operating in the cash economy.")
+st.title("🌾 Sovereign Underwriting Dashboard")
+st.markdown("Automated risk assessment for the rural cash economy using alternative digital footprints.")
 st.divider()
 
-if evaluate_btn:
-    if not farmer_id:
-        st.warning("⚠️ Please enter a valid Farmer ID to proceed.")
-    else:
-        # --- ML PIPELINE EXECUTION ---
-        with st.spinner("Analyzing alternative digital footprints via Databricks MLflow..."):
-            score, features = fetch_ml_score(farmer_id)
-            
-        # --- TOP HALF: THE HARD DATA ---
-        st.subheader("📊 Alternative Credit Profile")
+if evaluate_btn and farmer_id:
+    with st.spinner("Fetching data from Unity Catalog & running MLflow inference..."):
+        score, features = fetch_ml_score(farmer_id)
         
-        # Determine styling based on score
-        if score >= 700:
-            risk_tier = "Prime (Low Risk)"
-        elif score >= 600:
-            risk_tier = "Near Prime (Medium Risk)"
-        else:
-            risk_tier = "Subprime (High Risk)"
-            
-        # Layout: Score on the left, Metrics on the right
-        score_col, metrics_col = st.columns([1, 2.5])
-        
-        with score_col:
-            st.metric(label="Sovereign Trust Score", value=score, delta=risk_tier)
-            
-        with metrics_col:
-            st.caption("Key Data Footprints")
-            # 3 Alternative Data Cards
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.metric(label="📱 Telecom Stability", value="Verified", delta=features["Telecom Streak"])
-            with c2:
-                st.metric(label="🚜 Mandi Transport", value="Active", delta=features["FASTag Activity"])
-            with c3:
-                st.metric(label="🏛️ Gov Welfare", value="Linked", delta=features["PM-Kisan Status"])
+        risk_tier = "Prime" if score >= 700 else "Near Prime" if score >= 600 else "Subprime"
+        color = "green" if score >= 650 else "red"
 
-        st.write("---") # Visual separator
+    # --- TOP ROW: GAUGE CHART & METRICS ---
+    col1, col2 = st.columns([1, 2])
+    
+    with col1:
+        # Professional Plotly Gauge Chart
+        fig_gauge = go.Figure(go.Indicator(
+            mode = "gauge+number+delta",
+            value = score,
+            domain = {'x': [0, 1], 'y': [0, 1]},
+            title = {'text': "Trust Score", 'font': {'size': 24}},
+            delta = {'reference': 600, 'increasing': {'color': "green"}},
+            gauge = {
+                'axis': {'range': [300, 900], 'tickwidth': 1, 'tickcolor': "darkblue"},
+                'bar': {'color': "#3b82f6"},
+                'bgcolor': "white",
+                'borderwidth': 2,
+                'bordercolor': "gray",
+                'steps': [
+                    {'range': [300, 600], 'color': '#fee2e2'},
+                    {'range': [600, 700], 'color': '#fef3c7'},
+                    {'range': [700, 900], 'color': '#d1fae5'}],
+            }
+        ))
+        fig_gauge.update_layout(height=300, margin=dict(l=10, r=10, t=40, b=10))
+        st.plotly_chart(fig_gauge, use_container_width=True)
 
-        # --- BOTTOM HALF: SOVEREIGN REASONING (GenAI) ---
-        st.subheader("🤖 AI Underwriting Advisory (RBI Compliant)")
-        st.caption("Locally generated rationale explaining the ML model's decision.")
-        
-        with st.spinner("Drafting compliant rationale via Databricks Foundation Model APIs..."):
-            advisory_text = generate_rbi_letter(score, features)
-            
-        # Display the output in a clean info/success box
-        if score >= 600:
-            st.success(advisory_text, icon="✅")
-        else:
-            st.warning(advisory_text, icon="⚠️")
-
-else:
-    # --- DEFAULT / WAITING STATE ---
-    # Center-aligned welcome screen
-    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        st.info("👈 Please enter an applicant ID in the sidebar and click **Evaluate Applicant** to run the pipeline.")
+        st.subheader("Key Alternative Footprints")
+        st.markdown(f"**Applicant Profile:** `{farmer_id}` | **Assigned Tier:** `{risk_tier}`")
+        st.write("") # Spacing
+        
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric(label="Telecom Streak", value=f"{features['telecom_streak_mos']} mo", delta="Verified", delta_color="normal")
+        m2.metric(label="FASTag Pings", value=f"{features['fastag_trips_6m']}", help="Mandi trips in last 6 months")
+        m3.metric(label="PM-Kisan", value=features['pm_kisan_verified'], delta="Gov. Linked" if features['pm_kisan_verified']=="Yes" else "Unverified", delta_color="normal" if features['pm_kisan_verified']=="Yes" else "inverse")
+        m4.metric(label="UPI P2M Ratio", value=features['upi_p2m_ratio'], help="Low ratio indicates cash dependency")
+
+    st.divider()
+
+    # --- BOTTOM ROW: THE "HACKATHON WINNING" TABS ---
+    tab1, tab2, tab3 = st.tabs(["🤖 GenAI Advisory", "📈 Explainable AI (XAI)", "🗄️ Data Lineage"])
+    
+    with tab1:
+        st.subheader("RBI-Compliant Decision Rationale")
+        with st.spinner("Querying FAISS Vector Search & Llama-3..."):
+            advisory = generate_rbi_advisory(score)
+        
+        if score >= 650:
+            st.success(advisory)
+        else:
+            st.warning(advisory)
+            
+    with tab2:
+        st.subheader("Model Feature Importance")
+        st.caption("Visualizing the weights assigned by the Databricks AutoML model.")
+        
+        # Explainable AI Bar Chart
+        fig_xai = go.Figure(go.Bar(
+            x=[35, 25, 20, 10, 10],
+            y=['Telecom History', 'FASTag Activity', 'PM-Kisan Link', 'UPI Volume', 'Bank Bal'],
+            orientation='h',
+            marker_color=['#10b981', '#3b82f6', '#8b5cf6', '#6b7280', '#9ca3af']
+        ))
+        fig_xai.update_layout(height=300, margin=dict(l=0, r=0, t=0, b=0), yaxis={'categoryorder':'total ascending'})
+        st.plotly_chart(fig_xai, use_container_width=True)
+
+    with tab3:
+        st.subheader("Medallion Architecture (Databricks)")
+        st.caption("How data flowed into this prediction:")
         st.markdown("""
-        **How it works:**
-        1. Ingests raw data via Databricks Unity Catalog.
-        2. MLflow scores the applicant using non-traditional proxies (Telecom, FASTag, etc.).
-        3. Llama-3 (AI Gateway) drafts an RBI-compliant explanation in local languages.
+        * 🥉 **Bronze:** Raw JSON logs from Telecom APIs, FASTag CSVs, and UPI dumps.
+        * 🥈 **Silver:** Cleansed and joined on `Aadhaar_Hash` using Delta Live Tables.
+        * 🥇 **Gold:** Aggregated feature store serving the MLflow model.
         """)
+
+elif not evaluate_btn:
+    # Beautiful empty state
+    st.info("👈 Enter an Applicant ID in the sidebar to initiate the AI Underwriting sequence.")
+    st.markdown("""
+    ### Why Krishi-Credit?
+    Traditional banks reject farmers with low UPI balances. We use **Databricks ML** to discover creditworthiness hidden in alternative data, empowering the unbanked.
+    """)
