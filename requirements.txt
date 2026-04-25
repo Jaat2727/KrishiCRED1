@@ -1,6 +1,0 @@
-streamlit
-pandas
-plotly
-streamlit-option-menu
-databricks-sdk
-mlflow
